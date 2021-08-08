@@ -1,0 +1,42 @@
+version: '3.5'
+
+services:
+
+  db:
+    build:
+      context: .
+      dockerfile: ./data/Dockerfile
+    image: 3mf.db-image
+    container_name: 3mf.db-container
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    image: 3mf.backend-image
+    container_name: 3mf.backend-container
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  reverse-proxy:
+    build:
+      context: .
+      dockerfile: ./reverse-proxy/Dockerfile
+    image: 3mf.reverse-proxy-image
+    container_name: 3mf.reverse-proxy-container
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+    restart: unless-stopped
+
